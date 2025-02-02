@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 
-const MovieDetail = ({ movie }) => {
+const MovieDetail = ({ movie }: any) => {
   if (!movie) {
     return <p className="text-center text-gray-500">No movie available</p>;
   }
@@ -34,7 +34,7 @@ const MovieDetail = ({ movie }) => {
   );
 };
 
-const MovieCard = ({ movie }) => (
+const MovieCard = ({ movie }: any) => (
   <Link href={`/movies/${movie.id}`} passHref key={movie.id}>
     <div className="movie-card max-w-6xl bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between items-center transform transition duration-150 hover:scale-105 hover:shadow-xl cursor-pointer">
       <img
@@ -54,7 +54,7 @@ const MovieCard = ({ movie }) => (
 );
 
 export default function Home() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Fetch movies on component mount
@@ -70,7 +70,7 @@ export default function Home() {
         } else {
           toast.error("Unable to fetch movies.");
         }
-      } catch (error) {
+      } catch (error: any) {
         toast.error(`Server Error: ${error.message}`);
       }
     };

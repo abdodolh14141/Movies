@@ -51,7 +51,7 @@ const Nav = () => {
       {isLoggedIn && (
         <div>
           <h1 className="text-center m-2 p-1 text-2xl">
-            Welcome, {firstName}!
+            Welcome, {firstName} !
           </h1>
         </div>
       )}

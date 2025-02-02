@@ -1,139 +1,126 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast, Toaster } from "sonner";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
+import Link from "next/link";
 
-interface UserLogin {
+interface FormData {
   email: string;
   password: string;
 }
 
-export default function Login() {
-  const [user, setUser] = useState<UserLogin>({
+export default function LoginPage() {
+  const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
-
   const router = useRouter();
 
-  // Handles traditional email/password sign-up
-  const onSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Handle form submission for credentials sign-in
+  const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
 
     try {
-      const res = await signIn("credentials", {
-        email: user.email,
-        password: user.password,
-        redirect: false,
+      const resData = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false, // Prevent automatic redirection
       });
 
-      if (res?.status === 200) {
-        toast.success("Successfully signed up!");
-        router.push("/");
+      if (resData?.ok) {
+        toast.success("Successfully logged in!");
+        router.push("/"); // Redirect to home page
       } else {
-        toast.error("Sign-up failed. Please try again.");
+        toast.error("Invalid credentials, please try again.");
       }
     } catch (error: any) {
-      console.error("Error during sign-up:", error);
-      toast.error(error || "Error connecting to the server.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 
-  // Handles input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUser((prevUser) => ({
-      ...prevUser,
-      [name]: value,
-    }));
-  };
-
-  // Handles Google Sign-In success
-  const handleGoogleSuccess = async (response: any) => {
+  // Handle Google sign-in
+  const handleGoogleSignIn = async () => {
     try {
-      // Sign in using NextAuth's Google provider
-      const result = await signIn("google", {
-        callbackUrl: "/", // Redirect to home page after sign-in
-        redirect: false, // We want to handle redirection manually
-      });
-
-      if (result?.ok) {
-        toast.success("Successfully signed in with Google!");
-        router.push(result?.url || "/movies");
-      }
-    } catch (error) {
-      console.error("Error during Google Sign-In:", error);
-      toast.error("Google Sign-In failed. Please try again.");
+      await signIn("google", { redirect: false });
+      toast.success("Redirecting to Google sign-in...");
+    } catch (error: any) {
+      toast.error("Failed to initiate Google sign-in.");
     }
   };
+
+  // Check if the user is already logged in
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const session = await getSession();
+        if (session?.user) {
+          router.replace("/"); // Redirect to home page if already logged in
+        }
+      } catch (error: any) {
+        console.error("Session check error:", error);
+        toast.error("Failed to check session.");
+      }
+    };
+    checkLogin();
+  }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Toaster />
-      <div className="w-full max-w-5xl p-8 rounded-lg text-black shadow-md transform transition-all duration-500 hover:scale-105 hover:shadow-xl bg-gradient-to-r from-blue-500 to-purple-600">
-        <header className="mb-6 text-center">
-          <h1 className="text-3xl font-bold text-gray-800">Login</h1>
-        </header>
-        <form onSubmit={onSignUp} className="space-y-6">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
+    <div className="flex justify-center items-center min-h-screen shadow-2xl">
+      <Toaster position="top-center" /> {/* Toast notifications */}
+      <div className="p-6 max-w-7xl w-full bg-white rounded-lg shadow-md">
+        <h1 className="text-4xl font-bold text-black text-center mb-2">
+          Sign In
+        </h1>
+        <p className="text-center mb-6 text-black">
+          Sign In To Your Account Using One Of The Methods
+        </p>
+        <div className="max-w-5xl w-full bg-white rounded-lg shadow-md mx-auto p-4">
+          {/* Credentials Sign-In Form */}
+          <form onSubmit={handleSubmit} className="p-4 m-4">
             <input
               type="email"
               name="email"
-              id="email"
-              placeholder="Enter Your Email"
-              value={user.email}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full p-3 m-3 border text-black rounded-md focus:outline-none focus:border-blue-500"
               required
             />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
             <input
               type="password"
               name="password"
-              id="password"
-              placeholder="Enter Your Password"
-              value={user.password}
-              onChange={handleInputChange}
-              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
+              placeholder="Password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="w-full p-3 border m-3 text-black rounded-md focus:outline-none focus:border-blue-500"
               required
             />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
-          >
-            Login
-          </button>
-        </form>
-        <div className="mt-6 text-center">
-          <div className="w-full py-2 px- text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300">
             <button
-              onClick={handleGoogleSuccess}
-              className="p-3 cursor-pointer hover:scale-125"
+              type="submit"
+              className="w-full p-3 m-3 bg-blue-500 text-white cursor-pointer font-semibold rounded-md hover:bg-blue-600 transition duration-200"
             >
-              <img
-                src="https://img.icons8.com/?size=100&id=EgRndDDLh8kS&format=png&color=000000"
-                alt="image gmail"
-                width={50}
-              />
+              Sign In
             </button>
+          </form>
+
+          {/* Google Sign-In Button */}
+          <button
+            onClick={handleGoogleSignIn}
+            className=" mx-auto p-3 m-3 bg-red-500 text-white cursor-pointer font-semibold rounded-md hover:bg-red-600 transition duration-200"
+          >
+            Sign In with Google
+          </button>
+
+          {/* Additional Links */}
+          <div className="p-2 flex text-green-600 text-lg justify-around">
+            <Link href="/signup">I Don't Have an Account</Link>
+            <Link href="/resetPassword">Forgot Password?</Link>
           </div>
         </div>
       </div>

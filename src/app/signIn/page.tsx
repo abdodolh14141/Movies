@@ -34,7 +34,7 @@ export default function SignIn() {
 
       if (res.data.success) {
         toast.success(res.data.message);
-        router.replace("/login");
+        router.push("/login");
       } else {
         toast.error(res.data.message || "Sign-up failed. Please try again.");
       }

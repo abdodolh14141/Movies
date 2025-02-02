@@ -1,9 +1,9 @@
 export default function About() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* About Section */}
-        <div className=" border-2 p-8 rounded-lg shadow-lg transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
+        <div className=" border-2 bg-white p-8 rounded-lg shadow-lg transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
           <h1 className="text-center text-4xl font-bold text-gray-800 mb-6">
             About This Project
           </h1>
@@ -76,15 +76,6 @@ export default function About() {
               trailers.
             </li>
           </ul>
-        </div>
-
-        {/* Call to Action Section */}
-        <div className="bg-white border-2 border-gray-200 p-8 rounded-lg shadow-lg mt-8 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">Get Started</h2>
-          <p className="text-lg text-gray-700 mb-4">
-            Ready to explore the world of movies? Sign up or log in to access
-            the full features of the app.
-          </p>
         </div>
       </div>
     </div>

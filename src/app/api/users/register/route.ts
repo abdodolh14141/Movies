@@ -40,13 +40,13 @@ export async function POST(req: NextRequest) {
     await newUser.save();
 
     return NextResponse.json(
-      { message: "User created successfully" },
+      { message: "User created successfully", success: true },
       { status: 201 }
     );
   } catch (error: any) {
     console.error("Error during user registration:", error); // Log the error for debugging
     return NextResponse.json(
-      { message: "An error occurred", error: error.message },
+      { message: "An error occurred", error: error.message, success: false },
       { status: 500 }
     );
   }

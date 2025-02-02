@@ -1,22 +1,30 @@
 import mongoose from "mongoose";
+import env from "dotenv/config";
 
+// Load environment variables
 const mongoUrl = process.env.URL_MONGO || "";
 
 if (!mongoUrl) {
   throw new Error("MongoDB URL is not defined in the environment variables.");
 }
 
-let isConnected = false; // Track the connection status
+// Track the connection status
+let isConnected = false;
 
-export async function Connect(): Promise<void> {
-  if (isConnected) return;
+// Function to connect to MongoDB
+export async function connectToDatabase(): Promise<void> {
+  if (isConnected) {
+    console.log("Database is already connected.");
+    return;
+  }
 
   try {
+    // Set max listeners to avoid potential memory leaks
     mongoose.connection.setMaxListeners(20);
 
+    // Connect to MongoDB
     await mongoose.connect(mongoUrl, {
-      tls: false, // Enables TLS/SSL
-      tlsAllowInvalidCertificates: false, // Allow invalid certificates only if necessary
+      serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds if the server is not reachable
     });
 
     isConnected = true;
@@ -26,19 +34,19 @@ export async function Connect(): Promise<void> {
       "Failed to connect to the database:",
       error instanceof Error ? error.message : error
     );
-    throw error;
+    throw error; // Re-throw the error to handle it in the calling function
   }
 }
 
-// Define connection events to monitor and handle MongoDB connection status
+// MongoDB connection event handlers
 mongoose.connection.on("connected", () => {
   isConnected = true;
   console.log("MongoDB connection established.");
 });
 
-mongoose.connection.on("warning", (warning) =>
-  console.warn("MongoDB warning:", warning.stack)
-);
+mongoose.connection.on("warning", (warning) => {
+  console.warn("MongoDB warning:", warning);
+});
 
 mongoose.connection.on("error", (err) => {
   console.error("MongoDB connection error:", err);
@@ -59,3 +67,6 @@ mongoose.connection.on("disconnected", async () => {
     );
   }
 });
+
+// Export the connection function
+export { connectToDatabase as Connect };

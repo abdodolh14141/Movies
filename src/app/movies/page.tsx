@@ -68,7 +68,7 @@ const Movies: React.FC = () => {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       {movies.length > 0 ? (
-        <div className="movies-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        <div className="movies-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
           {movies.map((movie) => (
             <Link href={`/movies/${movie.id}`} passHref key={movie.id}>
               <div className="movie-card bg-white w-full rounded-lg shadow-lg p-2 flex flex-col justify-between items-center transform transition duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">

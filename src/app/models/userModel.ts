@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema(
     Name: {
       type: String,
       required: [true, "Name is required"],
+      unique: true,
       trim: true,
       minlength: [2, "Name must be at least 2 characters"],
       maxlength: [50, "Name must not exceed 50 characters"],
@@ -26,7 +27,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
-      select: false, // Prevents the password from being returned in queries by default
     },
     isAdmin: {
       type: Boolean,
@@ -43,6 +43,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+const UserMovie =
+  mongoose.models.UserMovie || mongoose.model("UserMovie", userSchema);
 
-export default User;
+export default UserMovie;
