@@ -36,7 +36,7 @@ export default function LoginPage() {
         toast.error("Invalid credentials, please try again.");
       }
     } catch (error: any) {
-      toast.error("An error occurred. Please try again.");
+      toast.error(error);
     }
   };
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
         }
       } catch (error: any) {
         console.error("Session check error:", error);
-        toast.error("Failed to check session.");
+        toast.error(error);
       }
     };
     checkLogin();
@@ -69,13 +69,11 @@ export default function LoginPage() {
   return (
     <div className="flex justify-center items-center min-h-screen shadow-2xl">
       <Toaster position="top-center" /> {/* Toast notifications */}
-      <div className="p-6 max-w-7xl w-full bg-white rounded-lg shadow-md">
+      <div className="p-6 max-w-7xl w-full bg-white rounded-lg shadow-md transform transition-all duration-500 hover:scale-110 hover:shadow-2xl">
         <h1 className="text-4xl font-bold text-black text-center mb-2">
-          Sign In
+          Login
         </h1>
-        <p className="text-center mb-6 text-black">
-          Sign In To Your Account Using One Of The Methods
-        </p>
+
         <div className="max-w-5xl w-full bg-white rounded-lg shadow-md mx-auto p-4">
           {/* Credentials Sign-In Form */}
           <form onSubmit={handleSubmit} className="p-4 m-4">
@@ -119,7 +117,7 @@ export default function LoginPage() {
 
           {/* Additional Links */}
           <div className="p-2 flex text-green-600 text-lg justify-around">
-            <Link href="/signup">I Don't Have an Account</Link>
+            <Link href="/signIn">I Don't Have an Account</Link>
             <Link href="/resetPassword">Forgot Password?</Link>
           </div>
         </div>

@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import UserMovie from "@/app/models/userModel";
 import { JWT } from "next-auth/jwt";
 import { NextRequest } from "next/server";
+import { Session } from "inspector/promises";
 
 // Type extensions for NextAuth to add custom properties
 declare module "next-auth" {
@@ -45,6 +46,13 @@ const validateEnvVars = () => {
  * NextAuth configuration options.
  */
 const authOptions: NextAuthOptions = {
+  jwt: {
+    maxAge: 60 * 60, // 1 hour
+  },
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60, // 1 hour
+  },
   providers: [
     // Google OAuth provider
     GoogleProvider({
@@ -142,7 +150,7 @@ const authOptions: NextAuthOptions = {
           }
 
           return true; // Allow sign-in
-        } catch (error) {
+        } catch (error: any) {
           console.error("Google sign-in error:", error);
           return false; // Deny sign-in
         }

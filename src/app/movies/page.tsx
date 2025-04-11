@@ -71,23 +71,35 @@ const Movies: React.FC = () => {
         <div className="movies-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
           {movies.map((movie) => (
             <Link href={`/movies/${movie.id}`} passHref key={movie.id}>
-              <div className="movie-card bg-white w-full rounded-lg shadow-lg p-2 flex flex-col justify-between items-center transform transition duration-300 hover:scale-105 hover:shadow-xl cursor-pointer">
-                <img
-                  loading="lazy"
-                  src={movie.medium_cover_image}
-                  alt={movie.title}
-                  className="w-full h-64 object-cover rounded-md mb-4"
-                />
-                <h2 className="text-xl font-semibold mb-2 text-center">
-                  {movie.title}
-                </h2>
-                <p className="text-sm text-gray-700 mb-1">
-                  Rating: {movie.rating} / 10
-                </p>
-                <p className="text-sm text-gray-500 mb-3">{movie.year}</p>
-                <p className="text-sm text-gray-600 text-center line-clamp-3">
-                  {movie.summary}
-                </p>
+              <div className="movie-card group bg-white dark:bg-gray-800 w-full rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer">
+                <div className="relative aspect-[2/3]">
+                  <img
+                    loading="lazy"
+                    src={movie.medium_cover_image}
+                    alt={movie.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+
+                <div className="p-4 space-y-2">
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2">
+                    {movie.title}
+                  </h2>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-700 dark:text-gray-300">
+                      {movie.rating}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      {movie.year}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mt-2">
+                    {movie.summary}
+                  </p>
+                </div>
               </div>
             </Link>
           ))}

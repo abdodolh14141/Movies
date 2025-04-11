@@ -82,9 +82,9 @@ export default function SignIn() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center w-full min-h-screen">
       <Toaster />
-      <div className="w-full max-w-7xl p-8 rounded-lg shadow-lg bg-white">
+      <div className="w-full max-w-7xl p-8 rounded-lg shadow-lg transform transition-all duration-500 hover:scale-110 hover:shadow-2xl bg-white">
         <header className="mb-6 text-center">
           <h1 className="text-3xl font-bold text-gray-800">Sign Up</h1>
         </header>
@@ -172,16 +172,13 @@ export default function SignIn() {
           </button>
         </form>
         <div className="mt-6 text-center">
-          <div id="googleSignInButton" className="w-full">
+          <div id="googleSignInButton" className="w-full text-black">
             <button
               onClick={handleGoogleSuccess}
-              className="p-3 cursor-pointer hover:scale-125"
+              className=" p-3 m-3 bg-red-800 text-white flex justify-start cursor-pointer font-semibold rounded-md hover:bg-red-700 hover:scale-110 transition duration-200"
             >
-              <img
-                src="https://img.icons8.com/?size=100&id=EgRndDDLh8kS&format=png&color=000000"
-                alt="image gmail"
-                width={50}
-              />
+              {/* Google Sign-In Button */}
+              Sign In with Google
             </button>
           </div>
         </div>
