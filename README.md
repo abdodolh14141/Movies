@@ -1,6 +1,6 @@
 # Movies Platform
 
-A modern social media platform built with Next.js, MongoDB, and NextAuth for authentication. This platform allows users to connect, share posts, and interact with others in a secure and user-friendly environment.
+A modern Movies App To Show Modern Movies.
 
 ## Features
 
