@@ -3,188 +3,178 @@
 import axios from "axios";
 import { useState } from "react";
 import { toast, Toaster } from "sonner";
+// Tip: Install 'lucide-react' for these icons
+import { Code2, Zap, ShieldCheck, Mail, Send } from "lucide-react";
 
 interface FormData {
   Name: string;
   Email: string;
   Message: string;
 }
+
 export default function About() {
   const [formData, setFormData] = useState<FormData>({
     Name: "",
     Email: "",
     Message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  interface ResponseData {
-    data: any;
-  }
-
-  const ResConact = async (
+  const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const resData: ResponseData = await axios.post(
-        "/api/users/contact",
-        formData
-      );
-      if (resData.data.success) {
+      const { data } = await axios.post("/api/users/contact", formData);
+      if (data.success) {
         toast.success("Message sent successfully!");
-        setFormData({
-          Name: "",
-          Email: "",
-          Message: "",
-        });
-      } else {
-        toast.error("Something went wrong, please try again later.");
+        setFormData({ Name: "", Email: "", Message: "" });
       }
     } catch (error) {
-      toast.error("Something went wrong, please try again later.");
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <Toaster />
-      <div className="max-w-7xl mx-auto">
-        {/* About Section */}
-        <div className=" border-2 bg-white p-8 rounded-lg shadow-lg transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-          <h1 className="text-center text-4xl font-bold text-gray-800 mb-6">
-            About This Project
+    <div className="min-h-screen pb-20">
+      <Toaster richColors position="top-center" />
+
+      {/* Hero Section */}
+      <section className="border-b border-gray-200 py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-5xl font-extrabold text-white mb-6 tracking-tight">
+            About This <span className="text-blue-600">Project</span>
           </h1>
-          <p className="text-lg text-gray-700 mb-4">
-            This is a modern web application designed to showcase movies and
-            provide detailed information about them. It demonstrates the
-            integration of advanced technologies like <strong>Next.js</strong>,{" "}
-            <strong>TypeScript</strong>, and <strong>NextAuth.js</strong> for
-            authentication, along with <strong>Mongoose</strong> for database
-            management and <strong>Tailwind CSS</strong> for styling.
+          <p className="text-xl text-gray-600 leading-relaxed">
+            A modern movie discovery platform built to showcase the power of
+            full-stack development with{" "}
+            <span className="font-semibold text-gray-800">Next.js 14</span>.
           </p>
-          <p className="text-lg text-gray-700 mb-4">
-            The app supports authentication via email/password and Google,
-            ensuring secure access to protected routes. It also provides a
-            seamless user experience with responsive design and modern UI
-            components.
-          </p>
-          {/* Tech Stack Section */}
-          <div className="bg-white border-2 border-gray-200 p-8 rounded-lg shadow-lg mt-8 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-              Technologies Used
-            </h2>
-            <ul className="list-disc list-inside text-lg text-gray-700">
-              <li className="mb-2">
-                <strong>Next.js</strong> - A React framework for server-side
-                rendering and static site generation.
-              </li>
-              <li className="mb-2">
-                <strong>TypeScript</strong> - A typed superset of JavaScript
-                that improves code quality and developer productivity.
-              </li>
-              <li className="mb-2">
-                <strong>Mongoose</strong> - An ODM (Object Data Modeling)
-                library for MongoDB, used for database management.
-              </li>
-              <li className="mb-2">
-                <strong>Tailwind CSS</strong> - A utility-first CSS framework
-                for building modern and responsive designs.
-              </li>
-              <li className="mb-2">
-                <strong>NextAuth.js</strong> - A complete authentication
-                solution for Next.js applications.
-              </li>
+        </div>
+      </section>
+
+      <div className="max-w-6xl mx-auto px-4 -mt-10 space-y-12">
+        {/* Tech & Features Grid */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Tech Stack Card */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 transition-hover hover:shadow-md">
+            <div className="flex items-center gap-3 mb-6">
+              <Code2 className="text-blue-600 w-8 h-8" />
+              <h2 className="text-2xl font-bold text-gray-800">Tech Stack</h2>
+            </div>
+            <ul className="space-y-4">
+              {[
+                { label: "Next.js", desc: "React Framework for SSR & Edge" },
+                { label: "TypeScript", desc: "Type-safe development" },
+                { label: "Mongoose", desc: "MongoDB object modeling" },
+                { label: "NextAuth", desc: "Secure authentication" },
+              ].map((tech) => (
+                <li key={tech.label} className="flex flex-col">
+                  <span className="font-bold text-gray-900">{tech.label}</span>
+                  <span className="text-gray-500 text-sm">{tech.desc}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Features Section */}
-          <div className="bg-white border-2 border-gray-200 p-8 rounded-lg shadow-lg mt-8 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-              Key Features
-            </h2>
-            <ul className="list-disc list-inside text-lg text-gray-700">
-              <li className="mb-2">
-                User authentication with email/password and Google.
-              </li>
-              <li className="mb-2">
-                Protected routes for authenticated users only.
-              </li>
-              <li className="mb-2">
-                Modern and responsive UI built with Tailwind CSS.
-              </li>
-              <li className="mb-2">
-                Database integration using Mongoose for storing user and movie
-                data.
-              </li>
-              <li className="mb-2">
-                Detailed movie information, including ratings, reviews, and
-                trailers.
-              </li>
-            </ul>
+          {/* Features Card */}
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 transition-hover hover:shadow-md">
+            <div className="flex items-center gap-3 mb-6">
+              <Zap className="text-amber-500 w-8 h-8" />
+              <h2 className="text-2xl font-bold text-gray-800">Key Features</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <ShieldCheck className="text-green-600 w-5 h-5 mt-1" />
+                <p className="text-gray-700">
+                  Google & Email Auth via NextAuth
+                </p>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <ShieldCheck className="text-green-600 w-5 h-5 mt-1" />
+                <p className="text-gray-700">Responsive UI with Tailwind CSS</p>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
+                <ShieldCheck className="text-green-600 w-5 h-5 mt-1" />
+                <p className="text-gray-700">Dynamic Movie Data & Trailers</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto bg-white border border-gray-200 p-8 rounded-lg shadow-lg mt-8 transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            Contact Us
-          </h2>
-          <p className="text-gray-600 mb-6">
-            For any queries or feedback, please reach out to us.
-          </p>
-          <form onSubmit={ResConact}>
-            <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                className="w-full px-4 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Your Name"
-                onChange={(e) =>
-                  setFormData({ ...formData, Name: e.target.value })
-                }
-              />
+        {/* Contact Form Section */}
+        <div className="max-w-8xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="bg-blue-600 p-8 text-white text-center">
+            <Mail className="w-12 h-12 mx-auto mb-4 opacity-80" />
+            <h2 className="text-3xl font-bold">Get In Touch</h2>
+            <p className="opacity-90">
+              Questions or feedback? We'd love to hear from you.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-8 space-y-5">
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  required
+                  type="text"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-black"
+                  placeholder="John Doe"
+                  value={formData.Name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, Name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  required
+                  type="email"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-black"
+                  placeholder="john@example.com"
+                  value={formData.Email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, Email: e.target.value })
+                  }
+                />
+              </div>
             </div>
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                className="w-full px-4 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Your Email"
-                onChange={(e) =>
-                  setFormData({ ...formData, Email: e.target.value })
-                }
-              />
-            </div>
-            <div className="mb-6">
-              <label
-                htmlFor="message"
-                className="block text-gray-700 font-medium mb-2"
-              >
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Message
               </label>
               <textarea
-                id="message"
-                className="w-full px-4 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Your Message"
+                required
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-black"
+                placeholder="How can we help?"
+                value={formData.Message}
                 onChange={(e) =>
                   setFormData({ ...formData, Message: e.target.value })
                 }
               ></textarea>
             </div>
             <button
+              disabled={isSubmitting}
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              Submit
+              {isSubmitting ? (
+                "Sending..."
+              ) : (
+                <>
+                  Send Message <Send className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
         </div>

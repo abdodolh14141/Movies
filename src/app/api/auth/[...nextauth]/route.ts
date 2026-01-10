@@ -4,9 +4,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { Connect } from "@/dbConfig/dbConfig";
 import bcrypt from "bcrypt";
 import UserMovie from "@/app/models/userModel";
-import { JWT } from "next-auth/jwt";
-import { NextRequest } from "next/server";
-import { Session } from "inspector/promises";
 
 // Type extensions for NextAuth to add custom properties
 declare module "next-auth" {
@@ -120,8 +117,8 @@ const authOptions: NextAuthOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET, // Secret for signing tokens
   session: {
-    strategy: "jwt", // Use JWT for session management
-    maxAge: 24 * 60 * 60, // Session expires in 24 hours
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60,
   },
   jwt: {
     maxAge: 24 * 60 * 60, // JWT expires in 24 hours
@@ -177,6 +174,7 @@ const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login", // Custom sign-in page
+    error: "/error",
   },
   events: {
     // Log user sign-in events

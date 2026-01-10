@@ -42,10 +42,10 @@ const Nav = () => {
   );
 
   return (
-    <nav className="bg-red-950 text-white text-xl p-2 flex items-center justify-between">
+    <nav className="bg-zinc-600 text-white text-xl p-2 flex items-center justify-between">
       <div className="flex items-center space-x-5">
         <LinkButton href="/">Home</LinkButton>
-        <LinkButton href="/movies">Movies</LinkButton>
+        <LinkButton href="/movie">Movies</LinkButton>
       </div>
 
       {isLoggedIn && (
