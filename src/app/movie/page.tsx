@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import Image from "next/image";
-import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup, Variants } from "framer-motion";
 import {
   Search,
   Film,
@@ -24,7 +24,7 @@ const FALLBACK_IMAGE_PATH =
   "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1000&auto=format&fit=crop";
 
 /* --- Animation Variants --- */
-const gridVariants = {
+const gridVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -32,7 +32,7 @@ const gridVariants = {
   },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   show: {
     opacity: 1,
