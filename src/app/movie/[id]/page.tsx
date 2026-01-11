@@ -1,8 +1,9 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Play,
   Star,
@@ -14,12 +15,24 @@ import {
   TrendingUp,
   Ticket,
   X,
-  Heart,
   Users,
+  Calendar,
+  Clock,
+  Globe,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
-// Sub-component: YouTube Modal
+/* --- Animation Variants --- */
+const fadeInUp = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } },
+};
+
+/* --- Sub-component: YouTube Modal --- */
 const TrailerModal = ({
   videoId,
   onClose,
@@ -27,22 +40,34 @@ const TrailerModal = ({
   videoId: string;
   onClose: () => void;
 }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 backdrop-blur-md transition-all animate-in fade-in duration-300">
-    <button
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 backdrop-blur-xl"
+  >
+    <motion.button
+      whileHover={{ scale: 1.1, rotate: 90 }}
+      whileTap={{ scale: 0.9 }}
       onClick={onClose}
-      className="absolute top-6 right-6 text-white hover:text-red-500 transition-transform hover:scale-110 z-[110]"
+      className="absolute top-6 right-6 text-white hover:text-red-500 z-[110]"
     >
       <X size={40} />
-    </button>
-    <div className="w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+    </motion.button>
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      className="w-full max-w-5xl aspect-video rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.3)] border border-white/10 bg-black"
+    >
       <iframe
         src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
         className="w-full h-full"
         allow="autoplay; encrypted-media"
         allowFullScreen
       />
-    </div>
-  </div>
+    </motion.div>
+  </motion.div>
 );
 
 export default function MovieDetailsPage() {
@@ -53,23 +78,18 @@ export default function MovieDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerId, setTrailerId] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
 
-  // Load Movie Data
   useEffect(() => {
     if (!id) return;
-
     const loadData = async () => {
       try {
         setLoading(true);
-        // Using your fixed API route from the previous step
         const { data } = await axios.get(`/api/authApi/idMovie?id=${id}`);
-
         if (data.Response !== "False") {
           setMovieData(data);
           fetchTrailer(data.Title, data.Year);
         } else {
-          toast.error(data.Error || "Movie not found");
+          toast.error("Movie not found");
           router.push("/");
         }
       } catch (err) {
@@ -83,7 +103,6 @@ export default function MovieDetailsPage() {
 
   const fetchTrailer = async (title: string, year: string) => {
     try {
-      // PRO TIP: Move this to a backend route to hide the API Key
       const res = await axios.get(
         `https://www.googleapis.com/youtube/v3/search`,
         {
@@ -105,9 +124,14 @@ export default function MovieDetailsPage() {
   if (loading)
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-950">
-        <Loader2 className="animate-spin text-indigo-500 mb-4" size={48} />
-        <p className="text-slate-400 font-medium animate-pulse tracking-widest uppercase text-xs">
-          Assembling the scenes...
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        >
+          <Loader2 className="text-indigo-500" size={48} />
+        </motion.div>
+        <p className="mt-4 text-slate-400 font-bold tracking-widest uppercase text-xs animate-pulse">
+          Developing Film...
         </p>
       </div>
     );
@@ -115,43 +139,58 @@ export default function MovieDetailsPage() {
   if (!movieData) return null;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-white dark:bg-[#020617] text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">
       <Toaster richColors position="top-center" />
 
-      {showTrailer && trailerId && (
-        <TrailerModal
-          videoId={trailerId}
-          onClose={() => setShowTrailer(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showTrailer && trailerId && (
+          <TrailerModal
+            videoId={trailerId}
+            onClose={() => setShowTrailer(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
-      <div className="relative h-[65vh] md:h-[75vh] w-full overflow-hidden">
-        <Image
-          src={
-            movieData.Poster !== "N/A" ? movieData.Poster : "/placeholder.png"
-          }
-          alt="backdrop"
-          fill
-          priority
-          className="object-cover blur-3xl scale-110 opacity-40 select-none"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-slate-950 via-transparent to-transparent" />
+      <div className="relative h-[70vh] md:h-[85vh] w-full overflow-hidden">
+        <motion.div
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.5 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={
+              movieData.Poster !== "N/A" ? movieData.Poster : "/placeholder.png"
+            }
+            alt="backdrop"
+            fill
+            priority
+            className="object-cover blur-2xl"
+          />
+        </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/40 to-transparent" />
 
         {/* Navigation */}
-        <nav className="absolute p-5 flex justify-between items-center max-w-8xl mx-auto">
-          <button onClick={() => router.back()} className="nav-btn group">
-            <ChevronLeft
-              size={20}
-              className="group-hover:-translate-x-1 transition-transform"
-            />{" "}
-            Back
-          </button>
+        <nav className="absolute top-0 left-0 p-8 z-50">
+          <motion.button
+            whileHover={{ x: -5 }}
+            onClick={() => router.back()}
+            className="flex items-center gap-2 px-5 py-2.5 bg-black/20 backdrop-blur-xl rounded-full text-white border border-white/10 hover:bg-white/10 transition-all text-sm font-bold"
+          >
+            <ChevronLeft size={18} /> Back
+          </motion.button>
         </nav>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-12">
-          <div className="flex flex-col m-5 md:flex-row gap-10 items-center md:items-end">
-            <div className="movie-poster group relative w-64 aspect-[2/3] shrink-0">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-16">
+          <div className="flex flex-col md:flex-row gap-12 items-center md:items-end">
+            {/* Animated Poster */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
+              className="group relative w-72 aspect-[2/3] shrink-0 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
+            >
               <Image
                 src={
                   movieData.Poster !== "N/A"
@@ -160,172 +199,209 @@ export default function MovieDetailsPage() {
                 }
                 alt={movieData.Title}
                 fill
-                className="rounded-2xl object-cover shadow-2xl border-4 border-white/10"
+                className="rounded-3xl object-cover border border-white/10"
               />
               {trailerId && (
-                <div
+                <motion.div
+                  whileHover={{ opacity: 1 }}
                   onClick={() => setShowTrailer(true)}
-                  className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all cursor-pointer rounded-2xl"
+                  className="absolute inset-0 flex items-center justify-center bg-indigo-600/20 backdrop-blur-sm opacity-0 transition-all cursor-pointer rounded-3xl group-hover:opacity-100"
                 >
-                  <Play
-                    size={48}
-                    fill="white"
-                    className="text-white animate-pulse"
-                  />
-                </div>
+                  <div className="p-5 bg-white rounded-full shadow-2xl scale-90 group-hover:scale-100 transition-transform">
+                    <Play size={32} fill="black" className="text-black ml-1" />
+                  </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
 
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
-                <span className="badge-indigo">{movieData.Rated}</span>
+            {/* Title & Meta */}
+            <motion.div
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+              className="flex-1 text-center md:text-left"
+            >
+              <motion.div
+                variants={fadeInUp}
+                className="flex flex-wrap justify-center md:justify-start gap-3 mb-6"
+              >
+                <span className="px-3 py-1 bg-indigo-600 text-white text-[11px] font-black uppercase rounded-md tracking-widest">
+                  {movieData.Rated}
+                </span>
                 {movieData.Genre.split(",").map((g: string) => (
-                  <span key={g} className="badge-glass">
+                  <span
+                    key={g}
+                    className="px-4 py-1 bg-white/5 backdrop-blur-md border border-white/10 text-xs rounded-full font-bold"
+                  >
                     {g.trim()}
                   </span>
                 ))}
-              </div>
-              <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4">
+              </motion.div>
+              <motion.h1
+                variants={fadeInUp}
+                className="text-6xl md:text-8xl font-black tracking-tighter mb-6 bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400"
+              >
                 {movieData.Title}
-              </h1>
-              <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">
-                {movieData.Year} • {movieData.Runtime} •{" "}
-                {movieData.Language.split(",")[0]}
-              </p>
-            </div>
+              </motion.h1>
+              <motion.div
+                variants={fadeInUp}
+                className="flex flex-wrap justify-center md:justify-start gap-6 text-slate-400 font-bold uppercase text-[11px] tracking-[0.2em]"
+              >
+                <span className="flex items-center gap-2">
+                  <Calendar size={14} className="text-indigo-500" />{" "}
+                  {movieData.Year}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Clock size={14} className="text-indigo-500" />{" "}
+                  {movieData.Runtime}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Globe size={14} className="text-indigo-500" />{" "}
+                  {movieData.Language.split(",")[0]}
+                </span>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
 
-      {/* Stats & Main Content */}
-      <main className="max-w-7xl mx-auto px-6 -mt-12 relative z-20 pb-20">
-        <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
+      {/* Content Area */}
+      <main className="max-w-7xl mx-auto px-6 -mt-12 relative z-20 pb-32">
+        {/* Stats Section */}
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          whileInView={{ y: 0, opacity: 1 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-white dark:bg-slate-900/80 backdrop-blur-2xl p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-white/5"
+        >
           <StatBox
             label="IMDb"
             value={movieData.imdbRating}
-            icon={<Star className="text-yellow-500" />}
-            sub={movieData.imdbVotes}
+            icon={<Star className="text-yellow-400 fill-yellow-400" />}
+            sub={`${movieData.imdbVotes} Votes`}
           />
           <StatBox
             label="Metascore"
             value={movieData.Metascore}
-            icon={<TrendingUp className="text-green-500" />}
-            sub="Critics"
+            icon={<TrendingUp className="text-emerald-500" />}
+            sub="Critic Review"
           />
           <StatBox
             label="Box Office"
             value={movieData.BoxOffice}
             icon={<Ticket className="text-indigo-500" />}
-            sub="Total"
+            sub="Gross Revenue"
           />
           <StatBox
             label="Awards"
-            value={movieData.Awards?.split(" ")[0]}
+            value={movieData.Awards?.split(" ")[0] || "0"}
             icon={<Award className="text-orange-500" />}
-            sub="Wins"
+            sub="Total Wins"
           />
-        </div>
+        </motion.div>
 
-        {/* Main Story Line */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 mt-16">
-          <div className="lg:col-span-2 space-y-12">
-            <section>
-              <h2 className="section-title">
-                <BookOpen className="text-indigo-500" /> Storyline
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-20 mt-20">
+          <div className="lg:col-span-2 space-y-20">
+            <motion.section
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl font-black mb-8 flex items-center gap-4">
+                <BookOpen className="text-indigo-500" size={32} /> The Synopsis
               </h2>
-              <p className="text-xl leading-relaxed text-slate-600 dark:text-slate-300">
+              <p className="text-2xl leading-[1.6] text-slate-600 dark:text-slate-300 font-medium">
                 {movieData.Plot !== "N/A"
                   ? movieData.Plot
-                  : "Plot summary not available."}
+                  : "No plot available for this title."}
               </p>
-            </section>
+            </motion.section>
 
-            <section className="info-card">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-widest">
-                    Team
+            <motion.section
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="p-10 bg-slate-50 dark:bg-white/5 rounded-[2.5rem] border border-slate-100 dark:border-white/5"
+            >
+              <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                  <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-widest">
+                    Production Team
                   </h4>
                   <CreditItem label="Director" value={movieData.Director} />
                   <CreditItem label="Writers" value={movieData.Writer} />
                 </div>
-                <div className="space-y-4">
-                  <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-widest">
-                    Details
+                <div className="space-y-6">
+                  <h4 className="text-[11px] font-black text-indigo-500 uppercase tracking-widest">
+                    Filming Details
                   </h4>
                   <CreditItem label="Studio" value={movieData.Production} />
                   <CreditItem label="Country" value={movieData.Country} />
                 </div>
               </div>
-            </section>
+            </motion.section>
           </div>
 
-          <aside className="space-y-8">
-            <div className="bg-slate-50 dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-100 dark:border-slate-800">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <Users size={20} className="text-indigo-500" /> Top Cast
+          {/* Sidebar */}
+          <aside className="space-y-10">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="bg-slate-50 dark:bg-white/5 p-10 rounded-[2.5rem] border border-slate-100 dark:border-white/5"
+            >
+              <h3 className="text-xl font-black mb-8 flex items-center gap-3">
+                <Users size={24} className="text-indigo-500" /> Featured Cast
               </h3>
-              <div className="space-y-4">
-                {movieData.Actors.split(",").map((actor: string) => (
-                  <div
+              <div className="space-y-6">
+                {movieData.Actors.split(",").map((actor: string, i: number) => (
+                  <motion.div
                     key={actor}
-                    className="flex items-center gap-4 hover:translate-x-1 transition-transform cursor-default"
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-center gap-5 group cursor-pointer"
                   >
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold text-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-sm group-hover:bg-indigo-500 group-hover:text-white transition-all">
                       {actor.trim().charAt(0)}
                     </div>
-                    <span className="font-semibold">{actor.trim()}</span>
-                  </div>
+                    <span className="font-bold text-lg group-hover:text-indigo-500 transition-colors">
+                      {actor.trim()}
+                    </span>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <a
+            <motion.a
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
               href={`https://www.imdb.com/title/${id}`}
               target="_blank"
-              className="imdb-btn"
+              className="w-full flex items-center justify-center gap-3 py-6 bg-[#f5c518] text-black font-black rounded-[2rem] shadow-2xl shadow-yellow-500/20 text-xs tracking-[0.2em]"
             >
               <ExternalLink size={20} /> VIEW ON IMDB
-            </a>
+            </motion.a>
           </aside>
         </div>
       </main>
-
-      <style jsx>{`
-        .nav-btn {
-          @apply flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20 hover:bg-white/20 transition-all text-sm font-medium;
-        }
-        .badge-indigo {
-          @apply px-3 py-1 bg-indigo-600 text-white text-[10px] font-black uppercase rounded tracking-tighter;
-        }
-        .badge-glass {
-          @apply px-3 py-1 bg-white/10 backdrop-blur-md border border-white/10 text-xs rounded-full font-medium;
-        }
-        .section-title {
-          @apply text-2xl font-bold mb-6 flex items-center gap-3;
-        }
-        .info-card {
-          @apply bg-slate-50 dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-100 dark:border-slate-800;
-        }
-        .imdb-btn {
-          @apply w-full flex items-center justify-center gap-3 py-5 bg-[#f5c518] text-black font-black rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-yellow-500/20 active:scale-95 text-sm tracking-widest;
-        }
-      `}</style>
     </div>
   );
 }
 
 const StatBox = ({ label, value, icon, sub }: any) => (
-  <div className="flex items-start gap-4 p-2">
-    <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
-      {icon}
+  <div className="flex items-center gap-5">
+    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-inner">
+      {React.cloneElement(icon, { size: 24 })}
     </div>
-    <div>
-      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+    <div className="min-w-0">
+      <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">
         {label}
       </p>
-      <p className="text-xl font-black">{value === "N/A" ? "—" : value}</p>
-      <p className="text-[10px] text-slate-500 font-medium truncate max-w-[80px]">
+      <p className="text-2xl font-black tracking-tight">
+        {value === "N/A" ? "—" : value}
+      </p>
+      <p className="text-[10px] text-slate-500 font-bold uppercase truncate">
         {sub}
       </p>
     </div>
@@ -333,11 +409,11 @@ const StatBox = ({ label, value, icon, sub }: any) => (
 );
 
 const CreditItem = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+  <div className="group">
+    <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-2 group-hover:text-indigo-500 transition-colors">
       {label}
     </p>
-    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+    <p className="text-base font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
       {value === "N/A" ? "N/A" : value}
     </p>
   </div>

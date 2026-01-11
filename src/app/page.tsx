@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback, FormEvent } from "react";
 import { Toaster, toast } from "sonner";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion"; // Add this
 import {
   Film,
   Star,
@@ -11,15 +12,15 @@ import {
   Search,
   Calendar,
   PlayCircle,
+  ArrowRight,
 } from "lucide-react";
 
-/* --- Constants --- */
+/* --- Constants & Types remain the same --- */
 const OMDb_API_KEY = "ed49d703";
 const BASE_API_URL = "https://www.omdbapi.com/?apikey=" + OMDb_API_KEY;
 const INITIAL_SEARCH_TERM = "Avengers";
 const FALLBACK_IMAGE_PATH = "/placeholder-movie.png";
 
-/* --- Types --- */
 interface Movie {
   imdbID: string;
   Title: string;
@@ -28,22 +29,7 @@ interface Movie {
   Type: string;
 }
 
-interface ApiSearchResult {
-  Title: string;
-  Year: string;
-  imdbID: string;
-  Type: string;
-  Poster: string;
-}
-
-interface ApiSearchResponse {
-  Search: ApiSearchResult[] | null;
-  Response: "True" | "False";
-  Error?: string;
-}
-
-/* --- Utilities --- */
-const normalizeMovieData = (data: ApiSearchResult[]): Movie[] => {
+const normalizeMovieData = (data: any[]): Movie[] => {
   return data.map((item) => ({
     imdbID: item.imdbID,
     Title: item.Title ?? "Unknown Title",
@@ -54,41 +40,49 @@ const normalizeMovieData = (data: ApiSearchResult[]): Movie[] => {
   }));
 };
 
-/* --- Movie Card Component --- */
-const MovieCard = ({ movie }: { movie: Movie }) => (
-  <Link
-    href={`/movie/${movie.imdbID}`}
-    className="group relative flex flex-col w-full h-full bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700"
+/* --- Animated Movie Card --- */
+const MovieCard = ({ movie, index }: { movie: Movie; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay: index * 0.05 }}
+    whileHover={{ y: -10 }}
   >
-    <div className="relative aspect-[2/3] overflow-hidden">
-      <Image
-        src={movie.Poster}
-        alt={movie.Title}
-        fill
-        className="object-cover transform group-hover:scale-110 transition-transform duration-500"
-        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-        <PlayCircle className="text-white w-10 h-10 mb-2" />
+    <Link
+      href={`/movie/${movie.imdbID}`}
+      className="group relative flex flex-col w-full h-full bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700"
+    >
+      <div className="relative aspect-[2/3] overflow-hidden">
+        <Image
+          src={movie.Poster}
+          alt={movie.Title}
+          fill
+          className="object-cover transform group-hover:scale-110 transition-transform duration-700"
+          sizes="(max-width: 640px) 50vw, 20vw"
+        />
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
+            <PlayCircle className="text-white w-12 h-12" />
+          </motion.div>
+        </div>
+        <span className="absolute top-3 right-3 px-2 py-1 text-[10px] font-bold tracking-widest text-white bg-indigo-600 rounded-lg uppercase shadow-lg">
+          {movie.Type}
+        </span>
       </div>
-      <span className="absolute top-2 right-2 px-2 py-1 text-[10px] font-bold tracking-widest text-white bg-indigo-600/90 backdrop-blur-md rounded-md uppercase">
-        {movie.Type}
-      </span>
-    </div>
 
-    <div className="p-4 flex flex-col flex-grow">
-      <h2 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-        {movie.Title}
-      </h2>
-      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-        <Calendar className="w-3 h-3" />
-        <span>{movie.Year}</span>
+      <div className="p-4 flex flex-col flex-grow">
+        <h2 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 transition-colors">
+          {movie.Title}
+        </h2>
+        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <Calendar className="w-3 h-3" />
+          <span>{movie.Year}</span>
+        </div>
       </div>
-    </div>
-  </Link>
+    </Link>
+  </motion.div>
 );
 
-/* --- Main Home Component --- */
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,28 +90,21 @@ export default function Home() {
   const [currentSearch, setCurrentSearch] = useState(INITIAL_SEARCH_TERM);
 
   const fetchMovies = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      toast.warning("Please enter a search term.");
-      return;
-    }
+    if (!query.trim()) return;
     setLoading(true);
     setCurrentSearch(query);
     try {
-      const { data } = await axios.get<ApiSearchResponse>(
+      const { data } = await axios.get(
         `${BASE_API_URL}&s=${encodeURIComponent(query)}&type=movie`
       );
-      if (data.Response === "True" && data.Search) {
-        const normalized = normalizeMovieData(
-          data.Search.filter((m) => m.Poster !== "N/A")
-        );
-        setMovies(normalized);
-        toast.success(`Loaded ${normalized.length} results`);
+      if (data.Response === "True") {
+        setMovies(normalizeMovieData(data.Search));
       } else {
-        toast.error(data.Error || "No results found");
+        toast.error(data.Error);
         setMovies([]);
       }
     } catch (err) {
-      toast.error("Network connection failed");
+      toast.error("Connection failed");
     } finally {
       setLoading(false);
     }
@@ -127,156 +114,129 @@ export default function Home() {
     fetchMovies(INITIAL_SEARCH_TERM);
   }, [fetchMovies]);
 
-  const handleSearchSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    fetchMovies(searchTerm);
-  };
-
   const mainMovie = useMemo(() => movies[0] || null, [movies]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors">
-      <Toaster richColors position="bottom-center" />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+      <Toaster richColors />
 
-      {/* --- Header & Search Section --- */}
-      <header className="relative py-16 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-indigo-600/5 dark:bg-indigo-500/10 -z-10" />
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center justify-center p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-2xl mb-4">
-            <Film className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <h1 className="text-5xl md:text-6xl font-black tracking-tight">
-            Movie<span className="text-indigo-600">Browser</span>
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Discover thousands of movies and franchises in one place.
-          </p>
+      {/* --- Search Header --- */}
+      <header className="py-20 px-6">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="inline-block p-4 bg-indigo-600 rounded-3xl shadow-xl shadow-indigo-500/20"
+          >
+            <Film className="h-10 w-10 text-white" />
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-6xl font-black dark:text-white"
+          >
+            Find Your <span className="text-indigo-600">Cinema</span>
+          </motion.h1>
 
           <form
-            onSubmit={handleSearchSubmit}
-            className="relative max-w-2xl mx-auto group"
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchMovies(searchTerm);
+            }}
+            className="relative max-w-2xl mx-auto"
           >
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search (e.g. Inception, Marvel...)"
-              className="w-full pl-6 pr-16 py-5 rounded-2xl bg-white dark:bg-gray-900 border-2 border-transparent focus:border-indigo-500 shadow-xl outline-none transition-all dark:text-white text-lg"
+              placeholder="Search movies..."
+              className="w-full pl-8 pr-20 py-6 rounded-3xl bg-white dark:bg-gray-900 border-none shadow-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none dark:text-white text-xl transition-all"
             />
-            <button
-              type="submit"
-              disabled={loading}
-              className="absolute right-3 top-3 bottom-3 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all flex items-center gap-2"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin h-5 w-5" />
-              ) : (
-                <Search className="h-5 w-5" />
-              )}
+            <button className="absolute right-3 top-3 bottom-3 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl transition-all">
+              {loading ? <Loader2 className="animate-spin" /> : <Search />}
             </button>
           </form>
         </div>
       </header>
 
       {/* --- Featured Hero Section --- */}
-      {mainMovie && !loading && (
-        <section className="px-6 py-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="relative overflow-hidden rounded-3xl bg-gray-900 text-white min-h-[450px] flex items-center shadow-2xl">
-              {/* Background Blur Image */}
-              <div className="absolute inset-0 opacity-30">
+      <AnimatePresence mode="wait">
+        {mainMovie && !loading && (
+          <motion.section
+            key={mainMovie.imdbID}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="px-6 py-10 max-w-7xl mx-auto"
+          >
+            <div className="relative group overflow-hidden rounded-[40px] bg-gray-900 min-h-[500px] flex items-center shadow-3xl">
+              <div className="absolute inset-0">
                 <Image
                   src={mainMovie.Poster}
                   alt="bg"
                   fill
-                  className="object-cover blur-3xl scale-110"
+                  className="object-cover opacity-40 blur-2xl scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/60 to-transparent" />
               </div>
 
-              <div className="relative z-10 flex flex-col md:flex-row items-center p-8 md:p-16 gap-10 w-full">
-                <div className="w-48 md:w-64 aspect-[2/3] relative flex-shrink-0 shadow-2xl rounded-xl overflow-hidden border-4 border-white/10">
+              <div className="relative z-10 flex flex-col md:flex-row items-center p-12 md:p-20 gap-12 w-full">
+                <motion.div
+                  whileHover={{ rotateY: 15, rotateX: 5 }}
+                  style={{ perspective: 1000 }}
+                  className="w-64 aspect-[2/3] relative flex-shrink-0 shadow-2xl rounded-2xl overflow-hidden border-2 border-white/20"
+                >
                   <Image
                     src={mainMovie.Poster}
                     alt={mainMovie.Title}
                     fill
                     className="object-cover"
                   />
-                </div>
+                </motion.div>
 
-                <div className="flex-1 text-center md:text-left space-y-4">
-                  <span className="px-3 py-1 bg-indigo-600 rounded-full text-xs font-bold tracking-widest uppercase">
-                    Featured Today
+                <div className="flex-1 space-y-6 text-center md:text-left">
+                  <span className="px-4 py-1.5 bg-indigo-600/20 text-indigo-400 border border-indigo-600/30 rounded-full text-xs font-bold tracking-tighter uppercase">
+                    Trending Now
                   </span>
-                  <h2 className="text-4xl md:text-6xl font-bold">
+                  <h2 className="text-5xl md:text-7xl font-bold text-white tracking-tighter leading-tight">
                     {mainMovie.Title}
                   </h2>
-                  <div className="flex items-center justify-center md:justify-start gap-4 text-gray-300">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" /> {mainMovie.Year}
+                  <div className="flex items-center justify-center md:justify-start gap-6 text-gray-400">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-5 h-5" /> {mainMovie.Year}
                     </span>
-                    <span className="px-2 py-0.5 border border-gray-500 rounded text-xs uppercase">
+                    <span className="px-3 py-1 bg-white/10 rounded-lg text-white text-sm font-bold uppercase">
                       {mainMovie.Type}
                     </span>
                   </div>
-                  <p className="text-gray-400 max-w-xl text-lg leading-relaxed">
-                    This is the top result for{" "}
-                    <span className="text-white font-medium">
-                      "{currentSearch}"
-                    </span>
-                    . Explore high-quality details and technical specs for this
-                    title.
-                  </p>
                   <Link
                     href={`/movie/${mainMovie.imdbID}`}
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 hover:bg-indigo-50 rounded-2xl font-bold transition-transform hover:scale-105 active:scale-95"
+                    className="inline-flex items-center gap-3 px-10 py-5 bg-indigo-600 text-white hover:bg-indigo-500 rounded-2xl font-black text-lg transition-all shadow-xl shadow-indigo-600/30"
                   >
-                    <Star className="w-5 h-5 fill-indigo-600 text-indigo-600" />{" "}
-                    View Details
+                    Watch Now <ArrowRight className="w-6 h-6" />
                   </Link>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </motion.section>
+        )}
+      </AnimatePresence>
 
-      {/* --- Movie Grid --- */}
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <h3 className="text-3xl font-bold">Search Results</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Showing {movies.length} movies for "{currentSearch}"
-            </p>
-          </div>
+      {/* --- Results Grid --- */}
+      <main className="max-w-7xl mx-auto px-6 py-20">
+        <h3 className="text-3xl font-black mb-12 dark:text-white flex items-center gap-4">
+          Explore Results{" "}
+          <div className="h-1 flex-1 bg-indigo-600/10 rounded-full" />
+        </h3>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+          <AnimatePresence>
+            {movies.map((movie, index) => (
+              <MovieCard key={movie.imdbID} movie={movie} index={index} />
+            ))}
+          </AnimatePresence>
         </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[2/3] bg-gray-200 dark:bg-gray-800 animate-pulse rounded-2xl"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
-            {movies.map((movie) => (
-              <MovieCard key={movie.imdbID} movie={movie} />
-            ))}
-          </div>
-        )}
-
-        {!loading && movies.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">🔍</div>
-            <h4 className="text-2xl font-bold">No movies found</h4>
-            <p className="text-gray-500">
-              Try searching for something else like "Interstellar" or "Pixar"
-            </p>
-          </div>
-        )}
       </main>
     </div>
   );
