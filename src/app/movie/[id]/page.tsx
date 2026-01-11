@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import {
   Play,
   Star,
@@ -22,13 +22,47 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 
+/* --- TypeScript Interfaces --- */
+interface MovieData {
+  Title: string;
+  Year: string;
+  Rated: string;
+  Released: string;
+  Runtime: string;
+  Genre: string;
+  Director: string;
+  Writer: string;
+  Actors: string;
+  Plot: string;
+  Language: string;
+  Country: string;
+  Awards: string;
+  Poster: string;
+  Metascore: string;
+  imdbRating: string;
+  imdbVotes: string;
+  imdbID: string;
+  Type: string;
+  BoxOffice: string;
+  Production: string;
+  Response: string;
+  Error?: string;
+}
+
+interface StatBoxProps {
+  label: string;
+  value: string | number;
+  icon: React.ReactElement;
+  sub: string;
+}
+
 /* --- Animation Variants --- */
-const fadeInUp = {
+const fadeInUp: Variants = {
   initial: { opacity: 0, y: 30 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   animate: { transition: { staggerChildren: 0.1 } },
 };
 
@@ -72,9 +106,10 @@ const TrailerModal = ({
 
 export default function MovieDetailsPage() {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
 
-  const [movieData, setMovieData] = useState<any>(null);
+  const [movieData, setMovieData] = useState<MovieData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerId, setTrailerId] = useState<string | null>(null);
@@ -84,12 +119,15 @@ export default function MovieDetailsPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`/api/authApi/idMovie?id=${id}`);
+        const { data } = await axios.get<MovieData>(
+          `/api/authApi/idMovie?id=${id}`
+        );
+
         if (data.Response !== "False") {
           setMovieData(data);
           fetchTrailer(data.Title, data.Year);
         } else {
-          toast.error("Movie not found");
+          toast.error(data.Error || "Movie not found");
           router.push("/");
         }
       } catch (err) {
@@ -171,7 +209,6 @@ export default function MovieDetailsPage() {
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/40 to-transparent" />
 
-        {/* Navigation */}
         <nav className="absolute top-0 left-0 p-8 z-50">
           <motion.button
             whileHover={{ x: -5 }}
@@ -184,7 +221,6 @@ export default function MovieDetailsPage() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-16">
           <div className="flex flex-col md:flex-row gap-12 items-center md:items-end">
-            {/* Animated Poster */}
             <motion.div
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -214,7 +250,6 @@ export default function MovieDetailsPage() {
               )}
             </motion.div>
 
-            {/* Title & Meta */}
             <motion.div
               variants={staggerContainer}
               initial="initial"
@@ -228,7 +263,7 @@ export default function MovieDetailsPage() {
                 <span className="px-3 py-1 bg-indigo-600 text-white text-[11px] font-black uppercase rounded-md tracking-widest">
                   {movieData.Rated}
                 </span>
-                {movieData.Genre.split(",").map((g: string) => (
+                {movieData.Genre.split(",").map((g) => (
                   <span
                     key={g}
                     className="px-4 py-1 bg-white/5 backdrop-blur-md border border-white/10 text-xs rounded-full font-bold"
@@ -265,9 +300,7 @@ export default function MovieDetailsPage() {
         </div>
       </div>
 
-      {/* Content Area */}
       <main className="max-w-7xl mx-auto px-6 -mt-12 relative z-20 pb-32">
-        {/* Stats Section */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
@@ -342,7 +375,6 @@ export default function MovieDetailsPage() {
             </motion.section>
           </div>
 
-          {/* Sidebar */}
           <aside className="space-y-10">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -354,7 +386,7 @@ export default function MovieDetailsPage() {
                 <Users size={24} className="text-indigo-500" /> Featured Cast
               </h3>
               <div className="space-y-6">
-                {movieData.Actors.split(",").map((actor: string, i: number) => (
+                {movieData.Actors.split(",").map((actor, i) => (
                   <motion.div
                     key={actor}
                     initial={{ opacity: 0, x: -10 }}
@@ -389,10 +421,10 @@ export default function MovieDetailsPage() {
   );
 }
 
-const StatBox = ({ label, value, icon, sub }: any) => (
+const StatBox = ({ label, value, icon, sub }: StatBoxProps) => (
   <div className="flex items-center gap-5">
     <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10 shadow-inner">
-      {React.cloneElement(icon, { size: 24 })}
+      {React.cloneElement(icon, { size: 24 } as any)}
     </div>
     <div className="min-w-0">
       <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">
