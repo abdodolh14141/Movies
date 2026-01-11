@@ -31,7 +31,18 @@ const Nav = () => {
 
   const firstName = useMemo(() => userName.split(" ")[0], [userName]);
 
-  const LinkButton = ({ href, children, className = "", ...props }) => (
+  type LinkButtonProps = React.PropsWithChildren<{
+    href: string;
+    className?: string;
+    [key: string]: any;
+  }>;
+
+  const LinkButton: React.FC<LinkButtonProps> = ({
+    href,
+    children,
+    className = "",
+    ...props
+  }) => (
     <Link
       href={href}
       className={`hover:bg-red-700 py-1 px-4 rounded transition ${className}`}
