@@ -31,7 +31,18 @@ const Nav = () => {
 
   const firstName = useMemo(() => userName.split(" ")[0], [userName]);
 
-  const LinkButton = ({ href, children, className = "", ...props }) => (
+  type LinkButtonProps = React.PropsWithChildren<{
+    href: string;
+    className?: string;
+    [key: string]: any;
+  }>;
+
+  const LinkButton: React.FC<LinkButtonProps> = ({
+    href,
+    children,
+    className = "",
+    ...props
+  }) => (
     <Link
       href={href}
       className={`hover:bg-red-700 py-1 px-4 rounded transition ${className}`}
@@ -42,10 +53,10 @@ const Nav = () => {
   );
 
   return (
-    <nav className="bg-red-950 text-white text-xl p-2 flex items-center justify-between">
+    <nav className="bg-zinc-600 text-white text-xl p-2 flex items-center justify-between">
       <div className="flex items-center space-x-5">
         <LinkButton href="/">Home</LinkButton>
-        <LinkButton href="/movies">Movies</LinkButton>
+        <LinkButton href="/movie">Movies</LinkButton>
       </div>
 
       {isLoggedIn && (
