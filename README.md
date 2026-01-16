@@ -1,28 +1,24 @@
-# Movies Platform
+🎬 Movies Platform
+A high-performance, full-stack web application for discovering and managing modern movies. Built with the latest Next.js 15 App Router features and a focus on sleek user experience.
 
-A modern Movies App To Show Modern Movies.
+✨ Features
+Dynamic Movie Discovery: Real-time data fetching from the OMDB API with optimized performance using React Hooks.
 
-## Features
+Secure Authentication: Comprehensive auth system powered by NextAuth.js, featuring:
 
-- **User Authentication**
-  - Email/Password login
-  - Google OAuth integration
-  - Secure session management
+Email/Password credentials.
 
-- **Profile Management**
-  - Customizable user profiles
-  - Profile picture upload
-  - Age and gender information
-  - Follow/Unfollow functionality
+One-click Google OAuth integration.
 
-- **Post Management**
-  - Create, read, and delete posts
-  - Image upload From Api
+Secure session management and password hashing with Bcrypt.
 
-- **Responsive Design**
-  - Mobile-friendly interface
-  - Modern UI with Tailwind CSS
-  - Smooth animations
+Rich Details: Deep-dive into movie specifics including plot summaries, ratings, and view counts.
+
+Modern UI/UX:
+
+Fully Responsive: Crafted with Tailwind CSS for a seamless experience on mobile, tablet, and desktop.
+
+Fluid Animations: Enhanced with Framer Motion for premium-feel transitions.
 
 ## Tech Stack
 
@@ -30,11 +26,12 @@ A modern Movies App To Show Modern Movies.
   - Next.js 15.0.2
   - React 19.0.0
   - Tailwind CSS
-  - FontAwesome icons
+  - Use framer-motion for animation
 
 - **Backend**
   - MongoDB with Mongoose
   - NextAuth.js for authentication
+  - Tybescribt
 
 - **Authentication**
   - NextAuth.js
